@@ -13,7 +13,7 @@ api.interceptors.request.use((config) => {
       const token = parsed?.state?.token
       if (token) config.headers.Authorization = `Bearer ${token}`
     }
-  } catch (e) {}
+  } catch (e) { }
   return config
 })
 
@@ -31,37 +31,38 @@ api.interceptors.response.use(
 
 export const authApi = {
   register: (data) => api.post('/api/auth/register', data),
-  login:    (data) => api.post('/api/auth/login', data),
-  me:       ()     => api.get('/api/auth/me'),
+  login: (data) => api.post('/api/auth/login', data),
+  me: () => api.get('/api/auth/me'),
 }
 
 export const workoutApi = {
-  generate:  ()     => api.post('/api/workouts/generate'),
-  getCurrent:()     => api.get('/api/workouts/current'),
-  getToday:  ()     => api.get('/api/workouts/today'),
-  complete:  (data) => api.post('/api/workouts/complete', data),
-  getHistory:()     => api.get('/api/workouts/history'),
+  generate: () => api.post('/api/workouts/generate'),
+  getCurrent: () => api.get('/api/workouts/current'),
+  getToday: () => api.get('/api/workouts/today'),
+  complete: (data) => api.post('/api/workouts/complete', data),
+  getHistory: () => api.get('/api/workouts/history'),
+  youtubeSearch: (q) => api.get(`/api/workouts/youtube-search?q=${encodeURIComponent(q)}`),
 }
 
 export const nutritionApi = {
-  generate:     (data) => api.post('/api/nutrition/generate', data),
-  getCurrent:   ()     => api.get('/api/nutrition/current'),
-  getToday:     ()     => api.get('/api/nutrition/today'),
+  generate: (data) => api.post('/api/nutrition/generate', data),
+  getCurrent: () => api.get('/api/nutrition/current'),
+  getToday: () => api.get('/api/nutrition/today'),
   completeMeal: (data) => api.post('/api/nutrition/meal/complete', data),
-  getShoppingList: ()  => api.get('/api/nutrition/shopping-list'),
+  getShoppingList: () => api.get('/api/nutrition/shopping-list'),
 }
 
 export const progressApi = {
-  getSummary:      () => api.get('/api/progress/summary'),
-  getHistory:      (period) => api.get(`/api/progress/history?period=${period}`),
-  log:             (data) => api.post('/api/progress/log', data),
+  getSummary: () => api.get('/api/progress/summary'),
+  getHistory: (period) => api.get(`/api/progress/history?period=${period}`),
+  log: (data) => api.post('/api/progress/log', data),
   getAchievements: () => api.get('/api/progress/achievements'),
-  getCharts:       () => api.get('/api/progress/charts'),
+  getCharts: () => api.get('/api/progress/charts'),
 }
 
 export const chatApi = {
-  send:       (data) => api.post('/api/aromi-chat', data),
-  getHistory: ()     => api.get('/api/chat-history'),
+  send: (data) => api.post('/api/aromi-chat', data),
+  getHistory: () => api.get('/api/chat-history'),
   adjustPlan: (data) => api.post('/api/adjust-plan', data),
 }
 
