@@ -23,7 +23,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 # ── Routers ────────────────────────────────────────
-from app.routers import auth, workouts, nutrition, progress, health_assessment, ai_coach, calendar
+from app.routers import auth, workouts, nutrition, progress, health_assessment, ai_coach, calendar, calorie_scan
 
 app.include_router(auth.router,              prefix="/api/auth",              tags=["Auth"])
 app.include_router(workouts.router,          prefix="/api/workouts",          tags=["Workouts"])
@@ -32,6 +32,7 @@ app.include_router(progress.router,          prefix="/api/progress",          ta
 app.include_router(health_assessment.router, prefix="/api/health-assessment", tags=["Health"])
 app.include_router(ai_coach.router,          prefix="/api",                  tags=["AI Coach"])
 app.include_router(calendar.router,          prefix="/api/calendar",         tags=["Calendar"])
+app.include_router(calorie_scan.router,      prefix="/api/calories",         tags=["Calorie Scanner"])
 
 @app.on_event("startup")
 async def startup():

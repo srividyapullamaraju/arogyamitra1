@@ -12,6 +12,7 @@ const questions = [
   { id: 'weight', label: 'What is your weight (in kg)?', type: 'number', placeholder: 'e.g. 70' },
   { id: 'fitness_level', label: 'What is your current fitness level?', type: 'choice', options: ['Beginner', 'Intermediate', 'Advanced'] },
   { id: 'fitness_goal', label: 'What is your primary fitness goal?', type: 'choice', options: ['Weight Loss', 'Muscle Gain', 'General Fitness', 'Strength Training', 'Endurance'] },
+  { id: 'diet_preference', label: 'What is your diet preference?', type: 'choice', options: ['Vegetarian', 'Non-Vegetarian', 'Semi-Vegetarian', 'Vegan'] },
   { id: 'workout_preference', label: 'Where do you prefer to work out?', type: 'choice', options: ['Home', 'Gym', 'Outdoor', 'Mixed'] },
   { id: 'workout_time_preference', label: 'When do you prefer to work out?', type: 'choice', options: ['Morning', 'Evening'] },
   { id: 'medical_history', label: 'Any medical history?', type: 'textarea', placeholder: 'e.g. Heart condition (optional)' },
@@ -72,6 +73,7 @@ export default function HealthAssessment() {
         injuries: answers.injuries || '',
         allergies: answers.allergies || '',
         medications: answers.medications || '',
+        diet_preference: (answers.diet_preference || 'Vegetarian').toLowerCase(),
         calendar_sync: answers.calendar_sync || false,
       }
 
@@ -87,6 +89,7 @@ export default function HealthAssessment() {
       await nutritionApi.generate({
         calorie_target: 1800,
         diet_type: payload.fitness_goal,
+        diet_preference: payload.diet_preference,
         allergies: payload.allergies,
       })
 

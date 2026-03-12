@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Activity, Flame, MessageCircle, Heart, BarChart3, Bot, Target } from 'lucide-react'
+import { Activity, Flame, MessageCircle, Heart, BarChart3, Bot, Target, Send } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import StatCard from '../components/StatCard'
 import AROmiChat from '../components/AROmiChat'
@@ -255,6 +255,34 @@ export default function Dashboard() {
                 <p className="text-green-300/70 text-xs text-center mt-3 italic">
                   Keep going! Every calorie brings hope to someone in need! 💚
                 </p>
+              </div>
+
+              {/* Telegram Bot Card */}
+              <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0d1b2a] border border-[#2a2a40] rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Send className="w-5 h-5 text-[#2AABEE]" />
+                  <h2 className="text-lg font-semibold text-white">DoctorGenie Bot</h2>
+                </div>
+                <p className="text-gray-400 text-xs mb-4">Your AI medical assistant on Telegram — scan prescriptions, find hospitals & more.</p>
+                <div className="flex items-center gap-4">
+                  <div className="bg-white p-2 rounded-xl flex-shrink-0">
+                    <img src="/telegram-qr.png" alt="QR Code" className="w-24 h-24" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-gray-300 text-xs flex items-center gap-1.5">📸 Prescription Scanner</div>
+                    <div className="text-gray-300 text-xs flex items-center gap-1.5">🏥 Hospital Finder</div>
+                    <div className="text-gray-300 text-xs flex items-center gap-1.5">💊 Med Reminders</div>
+                    <a
+                      href="https://t.me/DoctorGenie_bot"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-[#2AABEE] hover:bg-[#229ED9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition mt-1"
+                    >
+                      <Send className="w-3 h-3" />
+                      Open Bot
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

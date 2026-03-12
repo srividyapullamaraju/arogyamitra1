@@ -165,6 +165,69 @@ def get_shopping_list(
     return {"shopping_list": shopping_list}
 
 
+class SwapMealRequest(BaseModel):
+    day: str  # e.g. "Monday"
+    meal_type: str  # e.g. "breakfast", "lunch", "dinner"
+    current_meal: Optional[str] = ""
+
+
+@router.post("/meal/swap")
+def swap_meal(
+    data: SwapMealRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Use AI to generate an alternative meal, then update the stored plan."""
+    plan_record = db.query(NutritionPlan).filter(
+        NutritionPlan.user_id == current_user.id,
+        NutritionPlan.is_active == True
+    ).order_by(NutritionPlan.created_at.desc()).first()
+
+    if not plan_record:
+        raise HTTPException(status_code=404, detail="No active nutrition plan")
+
+    plan_data = json.loads(plan_record.plan_data)
+    diet_pref = current_user.diet_preference or "vegetarian"
+
+    # Ask AI for an alternative
+    prompt = (
+        f"Suggest ONE alternative Indian {diet_pref} {data.meal_type} meal "
+        f"to replace '{data.current_meal}'. Keep similar calories. "
+        f"Reply ONLY with valid JSON (no markdown):\n"
+        f'{{"name":"...","calories":...,"protein_g":...,"carbs_g":...,"fat_g":...,'
+        f'"ingredients":["...","..."],"time":"..."}}'
+    )
+
+    try:
+        from app.services.ai_agent import ai_agent
+        system_prompt = "You are a nutrition expert. Return ONLY valid JSON, no markdown."
+        user_prompt = (
+            f"Suggest ONE alternative Indian {diet_pref} {data.meal_type} meal "
+            f"to replace '{data.current_meal}'. Keep similar calories. "
+            f"Reply ONLY with valid JSON:\n"
+            f'{{"name":"...","calories":...,"protein_g":...,"carbs_g":...,"fat_g":...,'
+            f'"ingredients":["...","..."],"time":"..."}}'
+        )
+        raw = ai_agent._call_groq(system_prompt, user_prompt, max_tokens=500)
+        new_meal = ai_agent._extract_json(raw)
+        if not new_meal or "name" not in new_meal:
+            raise ValueError("Invalid AI response")
+    except Exception as e:
+        print(f"Swap AI error: {e}")
+        raise HTTPException(status_code=500, detail="AI could not generate alternative")
+
+    # Update the plan in-place
+    for day_obj in plan_data.get("days", []):
+        if day_obj.get("day", "").lower() == data.day.lower():
+            day_obj[data.meal_type.lower()] = new_meal
+            break
+
+    plan_record.plan_data = json.dumps(plan_data)
+    db.commit()
+
+    return {"new_meal": new_meal}
+
+
 @router.get("/grocery-redirect/{ingredient}")
 def grocery_redirect(ingredient: str):
     return {"url": f"https://www.bigbasket.com/ps/?q={ingredient}"}

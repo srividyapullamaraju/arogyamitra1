@@ -23,6 +23,7 @@ class AssessmentRequest(BaseModel):
     injuries: Optional[str] = ""
     allergies: Optional[str] = ""
     medications: Optional[str] = ""
+    diet_preference: Optional[str] = "vegetarian"
     calendar_sync: Optional[bool] = False
 
 @router.post("/assessment/submit")
@@ -61,6 +62,7 @@ def submit_assessment(
     current_user.fitness_level = data.fitness_level
     current_user.fitness_goal = data.fitness_goal
     current_user.workout_preference = data.workout_preference
+    current_user.diet_preference = data.diet_preference or "vegetarian"
 
     db.commit()
     db.refresh(assessment)

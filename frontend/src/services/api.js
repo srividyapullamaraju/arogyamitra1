@@ -49,6 +49,7 @@ export const nutritionApi = {
   getCurrent: () => api.get('/api/nutrition/current'),
   getToday: () => api.get('/api/nutrition/today'),
   completeMeal: (data) => api.post('/api/nutrition/meal/complete', data),
+  swapMeal: (data) => api.post('/api/nutrition/meal/swap', data),
   getShoppingList: () => api.get('/api/nutrition/shopping-list'),
 }
 

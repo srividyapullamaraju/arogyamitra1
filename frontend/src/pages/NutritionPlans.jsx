@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Check, ShoppingCart, ExternalLink } from 'lucide-react'
+import { Check, ShoppingCart, ExternalLink, Calendar, RefreshCw } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import { nutritionApi } from '../services/api'
+import { mealToCalendarUrl } from '../utils/calendarUrl'
 import toast from 'react-hot-toast'
 
 const mealColors = {
@@ -21,6 +22,7 @@ export default function NutritionPlans() {
   const [activeTab, setActiveTab] = useState('today')
   const [completedMeals, setCompletedMeals] = useState(new Set())
   const [expandedDay, setExpandedDay] = useState(null)
+  const [swappingMeal, setSwappingMeal] = useState(null)
 
   useEffect(() => {
     loadNutrition()
@@ -68,12 +70,32 @@ export default function NutritionPlans() {
     }
   }
 
+  const handleSwapMeal = async (dayName, mealType, currentMealName) => {
+    const key = `${dayName}-${mealType}`
+    setSwappingMeal(key)
+    try {
+      const res = await nutritionApi.swapMeal({
+        day: dayName,
+        meal_type: mealType.toLowerCase(),
+        current_meal: currentMealName,
+      })
+      toast.success(`Swapped to ${res.data.new_meal.name}! 🔄`)
+      await loadNutrition()
+    } catch (error) {
+      toast.error('Could not swap meal — try again')
+    } finally {
+      setSwappingMeal(null)
+    }
+  }
+
   const days = plan?.days || []
 
-  const MealCard = ({ mealType, meal }) => {
+  const MealCard = ({ mealType, meal, dayName }) => {
     if (!meal) return null
     const color = mealColors[mealType] || mealColors.Breakfast
     const isCompleted = completedMeals.has(mealType.toLowerCase())
+    const swapKey = `${dayName}-${mealType}`
+    const isSwapping = swappingMeal === swapKey
 
     return (
       <div className={`${color.bg} border ${color.border} rounded-xl p-5`}>
@@ -85,13 +107,31 @@ export default function NutritionPlans() {
               <p className="text-gray-400 text-xs">{meal.time}</p>
             </div>
           </div>
-          <button
-            onClick={() => !isCompleted && handleCompleteMeal(mealType.toLowerCase())}
-            className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition ${isCompleted ? 'bg-green-600 border-green-500' : 'border-gray-500 hover:border-green-500'
-              }`}
-          >
-            {isCompleted && <Check className="w-4 h-4 text-white" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={mealToCalendarUrl(mealType, meal)}
+              target="_blank" rel="noopener noreferrer"
+              className="w-7 h-7 rounded-lg border-2 border-gray-500 hover:border-blue-500 flex items-center justify-center transition"
+              title="Add to Google Calendar"
+            >
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+            </a>
+            <button
+              onClick={() => handleSwapMeal(dayName, mealType, meal.name)}
+              disabled={isSwapping}
+              className="w-7 h-7 rounded-lg border-2 border-gray-500 hover:border-orange-500 flex items-center justify-center transition disabled:opacity-50"
+              title="Swap for alternative"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-gray-400 ${isSwapping ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => !isCompleted && handleCompleteMeal(mealType.toLowerCase())}
+              className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition ${isCompleted ? 'bg-green-600 border-green-500' : 'border-gray-500 hover:border-green-500'
+                }`}
+            >
+              {isCompleted && <Check className="w-4 h-4 text-white" />}
+            </button>
+          </div>
         </div>
 
         <h4 className="text-white font-bold text-lg mb-3">{meal.name}</h4>
@@ -171,8 +211,8 @@ export default function NutritionPlans() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`px-6 py-3 rounded-xl font-medium transition ${activeTab === tab.id
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-[#1a1a2e] border border-[#2a2a40] text-gray-400 hover:text-white'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-[#1a1a2e] border border-[#2a2a40] text-gray-400 hover:text-white'
                       }`}
                   >
                     {tab.label}
@@ -188,9 +228,9 @@ export default function NutritionPlans() {
                     <p className="text-white/80">Total: {todayMeals.total_calories || '~1800'} calories</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <MealCard mealType="Breakfast" meal={todayMeals.breakfast} />
-                    <MealCard mealType="Lunch" meal={todayMeals.lunch} />
-                    <MealCard mealType="Dinner" meal={todayMeals.dinner} />
+                    <MealCard mealType="Breakfast" meal={todayMeals.breakfast} dayName={todayName} />
+                    <MealCard mealType="Lunch" meal={todayMeals.lunch} dayName={todayName} />
+                    <MealCard mealType="Dinner" meal={todayMeals.dinner} dayName={todayName} />
                     {todayMeals.snacks && (
                       <div className={`${mealColors.Snacks.bg} border ${mealColors.Snacks.border} rounded-xl p-5`}>
                         <div className="flex items-center gap-2 mb-3">
@@ -232,9 +272,9 @@ export default function NutritionPlans() {
                       {expandedDay === idx && (
                         <div className="px-5 pb-5 border-t border-[#2a2a40] pt-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <MealCard mealType="Breakfast" meal={day.breakfast} />
-                            <MealCard mealType="Lunch" meal={day.lunch} />
-                            <MealCard mealType="Dinner" meal={day.dinner} />
+                            <MealCard mealType="Breakfast" meal={day.breakfast} dayName={day.day} />
+                            <MealCard mealType="Lunch" meal={day.lunch} dayName={day.day} />
+                            <MealCard mealType="Dinner" meal={day.dinner} dayName={day.day} />
                             {day.snacks && (
                               <div className="bg-green-600/10 border border-green-600/20 rounded-xl p-4">
                                 <h4 className="text-green-400 font-semibold mb-2">🍎 Snacks</h4>

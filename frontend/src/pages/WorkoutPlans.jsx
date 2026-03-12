@@ -3,6 +3,7 @@ import { Play, Check, Clock, Flame, ChevronDown, ChevronUp, X, Camera } from 'lu
 import Navbar from '../components/Navbar'
 import ExerciseCamera from '../components/ExerciseCamera'
 import { workoutApi } from '../services/api'
+import { workoutToCalendarUrl, syncWeekToCalendar } from '../utils/calendarUrl'
 import toast from 'react-hot-toast'
 
 export default function WorkoutPlans() {
@@ -117,6 +118,12 @@ export default function WorkoutPlans() {
                 >
                   📅 This Week
                 </button>
+                <button
+                  onClick={() => { syncWeekToCalendar(days); toast.success('Opening calendar events — approve each one! 📅') }}
+                  className="px-6 py-3 rounded-xl font-medium transition bg-green-600/20 border border-green-600/30 text-green-400 hover:text-green-300 hover:border-green-500"
+                >
+                  🔄 Sync Week to Calendar
+                </button>
               </div>
 
               {/* TODAY TAB */}
@@ -142,6 +149,13 @@ export default function WorkoutPlans() {
                         </span>
                       )}
                     </div>
+                    <a
+                      href={workoutToCalendarUrl(todayWorkout, 0)}
+                      target="_blank" rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition"
+                    >
+                      📅 Add to Google Calendar
+                    </a>
                   </div>
 
                   {!todayWorkout.rest_day && (
